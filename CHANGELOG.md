@@ -1,5 +1,21 @@
 # Change Log
 
+## [1.0.3] - 2024-10-17
+
+### Added
+
+- Add to tooltips
+  - Compass wind direction
+  - Minimum and maximum forecast temperatures
+
+### Fixed
+
+- Use units specified by user everywhere
+
+### Other
+
+- Update https://openweathermap.com API from version 2.5 to 3.0
+
 ## [1.0.2] - 2021-09-20
 
 ### Fixed
