@@ -43,11 +43,15 @@ def main():
         ip = requests.get("https://ipinfo.io/ip").text
         try:
             postal = int(requests.get(f"https://ipinfo.io/{ip}/postal").text)
+            try:
+                op_info = requests.get(f"https://ipinfo.io/{ip}/json").json()["org"].split(' ', 1)[1]
+            except Exception:
+                op_info = "Unknown"
         except Exception as e:
             return print({})
     except Exception as e:
         return print({})
-
+    print(op_info)
     # Handle wrong / useless postal codes
     bielefeld = {33607, 33609, 33611, 33613, 33615, 33617, 33519}
     if (postal in bielefeld):
@@ -83,6 +87,12 @@ def main():
         try:
             assert data["text"][16:19] == "200"
         except AssertionError:
+            try:
+                assert data["text"][16:19] == "401"
+            except AssertionError:
+                pass
+            else:
+                print(f"The current API-key is: {apikey}")
             data["class"] = "weather"
             print(json.dumps(data))
             sys.exit(data["text"])
@@ -115,7 +125,9 @@ def main():
         UV Index: {uvi}
         Sunrise: {sunrise}
         Sunset: {sunset}
-        Wind: {wind_direction}, {wind_speed:.0f} {UNITS_MAP[units][1]}"""
+        Wind: {wind_direction}, {wind_speed:.0f} {UNITS_MAP[units][1]}
+        ISP : {op_info}
+        """
     if "daily" in weather:
         temp_min = weather["daily"][0]["temp"]["min"]
         temp_max = weather["daily"][0]["temp"]["max"]
