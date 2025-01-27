@@ -6,6 +6,7 @@ import os
 import sys
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import time
 
 ICON_MAP = {
     "01d": "☀️",
@@ -23,6 +24,7 @@ UNITS_MAP = {
     "standard": ("K", "m/sec"),
     "metric": ("°C","m/sec"),
     "imperial": ("°F", "mph"),
+    "metric-simple": ("°", "m/s"),
 }
 
 COMPASS_POINTS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW', 'N']
@@ -36,53 +38,84 @@ def deg_to_dir(deg):
     return 'Uknown'
 
 def main():
-    apikey = os.getenv("WAYBAR_WEATHER_APIKEY")
-    lat = os.getenv("WAYBAR_WEATHER_LAT", "52.52")
-    lon = os.getenv("WAYBAR_WEATHER_LON", "13.38")
-    units = os.getenv("WAYBAR_WEATHER_UNITS", "metric")
-    exclude = os.getenv("WAYBAR_WEATHER_EXCLUDE", "minutely,hourly,daily")
 
+    try:
+        ip = requests.get("https://ipinfo.io/ip").text
+        try:
+            postal = int(requests.get(f"https://ipinfo.io/{ip}/postal").text)
+        except Exception as e:
+            return print({})
+    except Exception as e:
+        return print({})
+
+    # Handle wrong / useless postal codes
+    bielefeld = {33607, 33609, 33611, 33613, 33615, 33617, 33519}
+    if (postal in bielefeld):
+        postal = 33619
+    # Handle Telefónica NRW IP-range (useless)
+    elif (ip.startswith("176.1.")):
+        postal = default_postal
+    
+    dst_active = time.localtime().tm_isdst
+    tz = time.tzname[dst_active]
+
+    apikey = os.getenv("WAYBAR_WEATHER_APIKEY")
+    default_postal = os.getenv("WAYBAR_WEATHER_DEF_POSTAL", 33619)
+    units = os.getenv("WAYBAR_WEATHER_UNITS", "metric")
+    icon_units = os.getenv("WAYBAR_WEATHER_ICON_UNITS", "metric-simple")
+
+    if (not postal):
+        postal = default_postal
+    
     data = {}
     try:
-        url = (f"https://api.openweathermap.org/data/3.0/onecall?lat={lat}"
-               f"&lon={lon}&units={units}&exclude={exclude}&appid={apikey}")
+        url = (f"https://api.openweathermap.org/data/2.5/weather?zip={postal},de&appid={apikey}&units={units}")
         weather = requests.get(url).json()
 
     except Exception as e:
         return print({})
 
+    # Handles error codes
     if weather.get("cod"):
         data["text"] = "[weather] Error {}: {}".format(
             weather.get("cod"), weather.get("message")
         )
-        data["class"] = "weather"
-        print(json.dumps(data))
-        # sys.exit(data["text"])
-        sys.exit()
+        try:
+            assert data["text"][16:19] == "200"
+        except AssertionError:
+            data["class"] = "weather"
+            print(json.dumps(data))
+            sys.exit(data["text"])
+            sys.exit()
 
-    temp = weather["current"]["temp"]
-    icon = ICON_MAP.get(weather["current"]["weather"][0]["icon"], "")
-    feels_like = weather["current"]["feels_like"]
-    humidity = weather["current"]["humidity"]
-    pressure = weather["current"]["pressure"]
+
+    temp = weather["main"]["temp"]
+    icon = ICON_MAP.get(weather["weather"][0]["icon"], "")
+    feels_like = weather["main"]["feels_like"]
+    humidity = weather["main"]["humidity"]
+    pressure = weather["main"]["pressure"]
     sunrise = datetime.fromtimestamp(
-        weather["current"]["sunrise"], ZoneInfo(weather["timezone"])
+        weather["sys"]["sunrise"], ZoneInfo(tz)
     ).strftime("%H:%M")
     sunset = datetime.fromtimestamp(
-        weather["current"]["sunset"], ZoneInfo(weather["timezone"])
+        weather["sys"]["sunset"], ZoneInfo(tz)
     ).strftime("%H:%M")
-    wind_speed = weather["current"]["wind_speed"]
-    wind_direction = deg_to_dir(weather["current"]["wind_deg"])
-    uvi = weather["current"]["uvi"]
+    wind_speed = weather["wind"]["speed"]
+    wind_direction = deg_to_dir(weather["wind"]["deg"])
+    uvi = weather["sys"]["type"] #TODO
+    city = weather["name"]
+    country_code = weather["sys"]["country"]
 
-    data["text"] = f"{icon} {temp:.1f}{UNITS_MAP[units][0]}"
-    data["tooltip"] = f"""Feels like: {feels_like:.1f}{UNITS_MAP[units][0]}
-Pressure: {pressure} hPa
-Humidity: {humidity}%
-UV Index: {uvi}
-Sunrise: {sunrise}
-Sunset: {sunset}
-Wind: {wind_direction}, {wind_speed:.0f} {UNITS_MAP[units][1]}"""
+    data["text"] = f"{icon} {temp:.1f}{UNITS_MAP[icon_units][0]}"
+    data["tooltip"] = f"""
+        City: {city}, {postal}, {country_code}
+        Feels like: {feels_like:.1f}{UNITS_MAP[units][0]}
+        Pressure: {pressure} hPa
+        Humidity: {humidity}%
+        UV Index: {uvi}
+        Sunrise: {sunrise}
+        Sunset: {sunset}
+        Wind: {wind_direction}, {wind_speed:.0f} {UNITS_MAP[units][1]}"""
     if "daily" in weather:
         temp_min = weather["daily"][0]["temp"]["min"]
         temp_max = weather["daily"][0]["temp"]["max"]
