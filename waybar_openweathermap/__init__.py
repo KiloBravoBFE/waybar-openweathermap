@@ -42,23 +42,26 @@ def main():
     try:
         ip = requests.get("https://ipinfo.io/ip").text
         try:
-            postal = int(requests.get(f"https://ipinfo.io/{ip}/postal").text)
+            textpostal = requests.get(f"https://ipinfo.io/{ip}/postal").text
+            postal = textpostal.replace(" ", "%20").replace("\n", "")
+            country_code = requests.get(f"https://ipinfo.io/{ip}/country").text.replace(" ", "").replace("\n", "") 
+            textpostal = textpostal.replace("\n", "")
             try:
-                op_info = requests.get(f"https://ipinfo.io/{ip}/json").json()["org"].split(' ', 1)[1]
+                op_info = requests.get(f"https://ipinfo.io/{ip}/org").text.split(' ', 1)[1]
             except Exception:
                 op_info = "Unknown"
         except Exception as e:
-            return print({})
+            return print(e)
     except Exception as e:
         return print({})
-    print(op_info)
     # Handle wrong / useless postal codes
-    bielefeld = {33607, 33609, 33611, 33613, 33615, 33617, 33519}
-    if (postal in bielefeld):
-        postal = 33619
+    if (postal == "33519"):
+        postal, textpostal = "33619", "33619"
+    elif (postal == "531%2001"):
+        postal, textpostal = "532%2033", "532 33"
     # Handle Telefónica NRW IP-range (useless)
     elif (ip.startswith("176.1.")):
-        postal = default_postal
+        postal, textpostal = default_postal, default_postal
     
     dst_active = time.localtime().tm_isdst
     tz = time.tzname[dst_active]
@@ -70,14 +73,16 @@ def main():
 
     if (not postal):
         postal = default_postal
+    if (not country_code):
+        country_code = "de" # Sorry, this is hardcoded
     
     data = {}
     try:
-        url = (f"https://api.openweathermap.org/data/2.5/weather?zip={postal},de&appid={apikey}&units={units}")
+        url = (f"https://api.openweathermap.org/data/2.5/weather?zip={postal},{country_code}&appid={apikey}&units={units}")
         weather = requests.get(url).json()
 
     except Exception as e:
-        return print({})
+        return print(e)
 
     # Handles error codes
     if weather.get("cod"):
@@ -118,7 +123,7 @@ def main():
 
     data["text"] = f"{icon} {temp:.1f}{UNITS_MAP[icon_units][0]}"
     data["tooltip"] = f"""
-        City: {city}, {postal}, {country_code}
+        City: {city}, {textpostal}, {country_code}
         Feels like: {feels_like:.1f}{UNITS_MAP[units][0]}
         Pressure: {pressure} hPa
         Humidity: {humidity}%
