@@ -53,7 +53,7 @@ def main():
         except Exception as e:
             return print(e)
     except Exception as e:
-        return print({})
+        return print(e)
     # Handle wrong / useless postal codes
     if (postal == "33519"):
         postal, textpostal = "33619", "33619"
@@ -63,8 +63,9 @@ def main():
     elif (ip.startswith("176.1.")):
         postal, textpostal = default_postal, default_postal
     # Handle Telekom T-Mobile IP-range (useless)
-    elif (ip.startswith("80.178.")):
+    elif (ip.startswith("80.187.")):
         postal, textpostal = default_postal, default_postal
+        print(postal)
     
     dst_active = time.localtime().tm_isdst
     tz = time.tzname[dst_active]
