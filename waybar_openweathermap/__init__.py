@@ -62,6 +62,9 @@ def main():
     # Handle Telefónica NRW IP-range (useless)
     elif (ip.startswith("176.1.")):
         postal, textpostal = default_postal, default_postal
+    # Handle Telekom T-Mobile IP-range (useless)
+    elif (ip.startswith("80.178.")):
+        postal, textpostal = default_postal, default_postal
     
     dst_active = time.localtime().tm_isdst
     tz = time.tzname[dst_active]
