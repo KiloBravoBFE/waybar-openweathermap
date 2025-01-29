@@ -119,6 +119,7 @@ def main():
 
     temp = weather["main"]["temp"]
     icon = ICON_MAP.get(weather["weather"][0]["icon"], "")
+    description = weather["weather"][0]["description"]
     feels_like = weather["main"]["feels_like"]
     humidity = weather["main"]["humidity"]
     pressure = weather["main"]["pressure"]
@@ -136,6 +137,8 @@ def main():
 
     data["text"] = f"{icon} {temp:.1f}{UNITS_MAP[icon_units][0]}"
     data["tooltip"] = f"""
+        {description.capitalize()}
+
         City: {city}, {textpostal}, {country_code}
         Feels like: {feels_like:.1f}{UNITS_MAP[units][0]}
         Pressure: {pressure} hPa
