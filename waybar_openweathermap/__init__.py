@@ -49,7 +49,23 @@ def deg_to_dir(deg):
 def main():
 
     try:
+        postal = ""
         ip = requests.get("https://ipinfo.io/ip").text
+                # Handle wrong / useless postal codes
+        if (postal == "33519"):
+            postal, textpostal = "33619", "33619"
+        elif (postal == "531%2001"):
+            postal, textpostal = "532%2033", "532 33"
+        # Handle Telefónica NRW IP-range (useless)
+        elif (ip.startswith("176.1.")):
+            postal, textpostal = default_postal, default_postal
+        # Handle Telekom T-Mobile IP-range (useless)
+        elif (ip.startswith("80.187.")):
+            postal, textpostal = default_postal, default_postal
+    except Exception as e:
+        return print(e)
+
+    if (str(postal) != "33619"):
         try:
             textpostal = requests.get(f"https://ipinfo.io/{ip}/postal").text
             postal = textpostal.replace(" ", "%20").replace("\n", "")
@@ -61,20 +77,7 @@ def main():
                 op_info = "Unknown"
         except Exception as e:
             return print(e)
-    except Exception as e:
-        return print(e)
-    # Handle wrong / useless postal codes
-    if (postal == "33519"):
-        postal, textpostal = "33619", "33619"
-    elif (postal == "531%2001"):
-        postal, textpostal = "532%2033", "532 33"
-    # Handle Telefónica NRW IP-range (useless)
-    elif (ip.startswith("176.1.")):
-        postal, textpostal = default_postal, default_postal
-    # Handle Telekom T-Mobile IP-range (useless)
-    elif (ip.startswith("80.187.")):
-        postal, textpostal = default_postal, default_postal
-        print(postal)
+
     
     dst_active = time.localtime().tm_isdst
     tz = time.tzname[dst_active]
