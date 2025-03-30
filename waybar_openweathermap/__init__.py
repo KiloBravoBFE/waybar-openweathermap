@@ -82,6 +82,11 @@ def main():
     dst_active = time.localtime().tm_isdst
     tz = time.tzname[dst_active]
 
+    # I don't like this but for whatever reason Python still does not have a proper way to deal with IANA
+    # And for whatever reason ZoneInfo does not particularly like daylight saving.
+    if (tz in ("CEST", "CET")):
+        tz = "Europe/Berlin"
+
     apikey = os.getenv("WAYBAR_WEATHER_APIKEY")
     default_postal = os.getenv("WAYBAR_WEATHER_DEF_POSTAL", 33619)
     units = os.getenv("WAYBAR_WEATHER_UNITS", "metric")
@@ -118,7 +123,6 @@ def main():
             print(json.dumps(data))
             sys.exit(data["text"])
             sys.exit()
-
 
     temp = weather["main"]["temp"]
     icon = ICON_MAP.get(weather["weather"][0]["icon"], "")
