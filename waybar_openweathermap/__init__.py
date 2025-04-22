@@ -48,6 +48,12 @@ def deg_to_dir(deg):
 
 def main():
 
+    # Get env-vars
+    apikey = os.getenv("WAYBAR_WEATHER_APIKEY")
+    default_postal = os.getenv("WAYBAR_WEATHER_DEF_POSTAL", 33619)
+    units = os.getenv("WAYBAR_WEATHER_UNITS", "metric")
+    icon_units = os.getenv("WAYBAR_WEATHER_ICON_UNITS", "metric-simple")
+
     try:
         postal = ""
         ip = requests.get("https://ipinfo.io/ip").text
@@ -87,10 +93,6 @@ def main():
     if (tz in ("CEST", "CET")):
         tz = "Europe/Berlin"
 
-    apikey = os.getenv("WAYBAR_WEATHER_APIKEY")
-    default_postal = os.getenv("WAYBAR_WEATHER_DEF_POSTAL", 33619)
-    units = os.getenv("WAYBAR_WEATHER_UNITS", "metric")
-    icon_units = os.getenv("WAYBAR_WEATHER_ICON_UNITS", "metric-simple")
 
     if (not postal):
         postal = default_postal
