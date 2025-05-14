@@ -84,7 +84,6 @@ def main():
         elif (ip.startswith("80.187.")):
             postal, textpostal = default_postal, default_postal
 
-    
     dst_active = time.localtime().tm_isdst
     tz = time.tzname[dst_active]
 
@@ -140,7 +139,6 @@ def main():
     ).strftime("%H:%M")
     wind_speed = weather["wind"]["speed"]
     wind_direction = deg_to_dir(weather["wind"]["deg"])
-    uvi = weather["sys"]["type"] #TODO
     city = weather["name"]
     country_code = weather["sys"]["country"]
 
@@ -152,7 +150,6 @@ def main():
         Feels like: {feels_like:.1f}{UNITS_MAP[units][0]}
         Pressure: {pressure} hPa
         Humidity: {humidity}%
-        UV Index: {uvi}
         Sunrise: {sunrise}
         Sunset: {sunset}
         Wind: {wind_direction}, {wind_speed:.0f} {UNITS_MAP[units][1]}
