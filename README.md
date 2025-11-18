@@ -1,15 +1,16 @@
 IP-location Waybar weather plugin
 =====================
 
-This plugin does not use the [One Call API from OpenWeatherMap.org](https://openweathermap.org/api/one-call-3).
-You don't need to have an active subscription, and with normal usage you should never go over the free limit of 1000 request per day.
-Instead, you need to obtain a free API-key from [OpenWeatherMap.org](https://home.openweathermap.org/users/sign_up)
+This fork of the plugin **does not** use the [One Call API from OpenWeatherMap.org](https://openweathermap.org/api/one-call-3).
+You **don't** need to have an active subscription, and with normal usage you should never go over the free limit of 1000 request per day.
+Instead, you need to obtain a free API-key from [OpenWeatherMap.org](https://home.openweathermap.org/users/sign_up).
 My refresh setting for the waybar plugin is 600s.
 
 
 ## set your APIKEY and preferences
+You can do this in any way you like. I used env-vars to make life easier (for me). You can absolutely do whatever you want, go ahead and put it right in the code if you prefer doing that, but this is what I would suggest if you are unsure:
 
-In your ~/.bashrc add the following definition and place your APIKEY in there
+In your ~/.bashrc you could add the following definition and place your APIKEY in there
 
 ```bash
     # waybar weather settings:
@@ -18,7 +19,7 @@ In your ~/.bashrc add the following definition and place your APIKEY in there
     export WAYBAR_WEATHER_UNITS="metric"                                                            # General units (metric[°C and m/s] / imperial[°F and mph] / metric_simple[° and m/s] / standard[K and m/sec])
     export WAYBAR_WEATHER_ICON_UNITS="metric_simple"                                                # What appears in your waybar (not the tooltip)
 ```
-I recommend to set your settings in a sort of "start-script" for both them and waybar. This way you can make sure that they are loaded in the correct place at the correct time (or just do whatever works for you).
+To make your life even easier, I recommend to set your settings in a sort of "start-script" for both them and waybar. This way you can make sure that they are loaded in the correct place at the correct time (or just do whatever works for you).
 I use a .sh file in the following format:
 
 ```bash
